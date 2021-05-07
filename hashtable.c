@@ -5,49 +5,65 @@
 
 #include "hashtable.h"
 
-typedef struct element_int_t element_int_t;
-struct element_int_t
+typedef struct element_t element_t;
+struct element_t
 {
     bool           in_use;
     void          *key;
     void          *val;
-    element_int_t *next;
+    element_t *next;
 };
 
 struct hashtable_t
 {
-    size_t            num_element_ints;
+    size_t            num_elements;
     size_t            table_size;
     size_t            key_len;
     size_t            num_collision;
     hashtable_hash_f *hash_f;
-    element_int_t    *data;
+    element_t    *data;
 };
 
-static size_t default_hash_func(void *key, size_t len)
+uint32_t murmur_hash(const void *key, size_t len)
 {
-    return (size_t)key;
+    uint32_t h = 3323198485ul;
+    const uint8_t *byte = key;
+
+    for (size_t i = 0; i < len; i++)
+    {
+        h ^= byte[i];
+        h *= 0x5bd1e995;
+        h ^= h >> 15;
+    }
+
+    return h;
 }
 
-static size_t hash_idx(hashtable_t *ht, void *key)
+static uint32_t default_hash_func(const void *key, size_t len)
+{
+    return murmur_hash(key, len);
+}
+
+static size_t hash_idx(hashtable_t *ht, const void *key)
 {
     return ht->hash_f(key, ht->key_len) & (ht->table_size - 1);
 }
 
-static void clear_list(element_int_t *e)
+static void clear_list(element_t *e, size_t len)
 {
-    element_int_t *curr = e;
+    element_t *curr = e;
     while (curr)
     {
-        element_int_t *next = curr->next;
+        element_t *next = curr->next;
+        free(curr->key);
         free(curr);
         curr = next;
     }
 }
 
-void *hashtable_get(hashtable_t *ht, void *key)
+void *hashtable_get(hashtable_t *ht, const void *key)
 {
-    element_int_t *curr = &ht->data[hash_idx(ht, key)];
+    element_t *curr = &ht->data[hash_idx(ht, key)];
 
     while (curr)
         if (memcmp(curr->key, key, ht->key_len) == 0)
@@ -58,9 +74,9 @@ void *hashtable_get(hashtable_t *ht, void *key)
     return NULL;
 }
 
-void hashtable_put(hashtable_t *ht, void *key, void *val)
+void hashtable_put(hashtable_t *ht, const void *key, const void *val)
 {
-    element_int_t *curr = &ht->data[hash_idx(ht, key)];
+    element_t *curr = &ht->data[hash_idx(ht, key)];
 
     if (curr->in_use)
     {
@@ -68,12 +84,13 @@ void hashtable_put(hashtable_t *ht, void *key, void *val)
         while (curr->next) curr = curr->next;
         curr->next = calloc(1, sizeof(*curr));
         curr = curr->next;
+        curr->key = calloc(1, ht->key_len);
     }
 
-    curr->key = key;
-    curr->val = val;
+    memcpy(curr->key, key, ht->key_len);
+    curr->val = (void *)val;
     curr->in_use = true;
-    ht->num_element_ints++;
+    ht->num_elements++;
 }
 
 size_t hashtable_get_num_collision(hashtable_t *ht)
@@ -108,6 +125,8 @@ hashtable_t *hashtable_create(size_t table_size, size_t key_len)
         return NULL;
     }
     ht->data = calloc(ht->table_size, sizeof(*ht->data));
+    for (size_t i = 0; i < ht->table_size; i++)
+        ht->data[i].key = calloc(1, ht->key_len);
 
     return ht;
 }
@@ -115,10 +134,13 @@ hashtable_t *hashtable_create(size_t table_size, size_t key_len)
 void hashtable_destroy(hashtable_t *ht)
 {
     for (size_t i = 0; i < ht->table_size; i++)
-        if (ht->data[i].in_use)
-            if (ht->data[i].next)
-                clear_list(ht->data[i].next);
-    if (ht->data)
-        free(ht->data);
+    {
+        element_t *e = &ht->data[i];
+        if (e->in_use)
+            if (e->next)
+                clear_list(e->next, ht->key_len);
+        free(e->key);
+    }
+    free(ht->data);
     free(ht);
 }
