@@ -13,23 +13,21 @@ typedef struct {
 
 int main(int argc, char *argv[])
 {
-    dummy_data_t *data = calloc(TEST_SIZE, sizeof(*data));
-    char        **keys = calloc(TEST_SIZE, sizeof(*keys));
-
-    for (size_t i = 0; i < TEST_SIZE; i++)
-        keys[i] = calloc(1, KEY_LEN * sizeof(*keys[i]));
+    char **keys = calloc(TEST_SIZE, sizeof(*keys));
 
     for (size_t i = 0; i < TEST_SIZE; i++)
     {
+        keys[i] = calloc(1, KEY_LEN * sizeof(*keys[i]));
         snprintf(keys[i], KEY_LEN, "key %ld", i);
-        data[i].a = i;
-        data[i].b = i+1;
     }
 
-    hashtable_t *ht = hashtable_create(TEST_SIZE, KEY_LEN);
+    hashtable_t *ht = hashtable_create(TEST_SIZE);
 
     for (size_t i = 0; i < TEST_SIZE; i++)
-        hashtable_put(ht, keys[i], &data[i]);
+    {
+        dummy_data_t d = {i, i+1};
+        hashtable_put(ht, keys[i], &d, sizeof(d));
+    }
 
     for (size_t i = 0; i < 10; i++)
     {
@@ -57,7 +55,6 @@ int main(int argc, char *argv[])
     for (size_t i = 0; i < TEST_SIZE; i++)
         free(keys[i]);
     free(keys);
-    free(data);
 
     return 0;
 }
