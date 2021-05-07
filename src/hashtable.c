@@ -121,7 +121,7 @@ bool hashtable_put(hashtable_t *ht, const char *key, const void *val, size_t val
         e = e->next;
     }
 
-    e->key = calloc(1, strlen(key)+1); // +1 -> '/0'
+    e->key = calloc(1, strlen(key)+1); // +1 -> '\0'
     e->val = calloc(1, val_len);
     strcpy(e->key, key);
     memcpy(e->val, val, val_len);
@@ -142,7 +142,7 @@ size_t hashtable_resize(hashtable_t *ht, size_t size)
     ht->num_elements  = 0;
     ht->num_collision = 0;
 
-    /* Hash all old data to new data */
+    /* Put old data to new data */
     for (size_t i = 0; i < size_old; i++)
     {
         element_t *e = &data_old[i];

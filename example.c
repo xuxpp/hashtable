@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "hashtable.h"
+#include "src/hashtable.h"
 
 #define TEST_SIZE 12345
 #define KEY_LEN   20
