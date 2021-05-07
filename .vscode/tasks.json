@@ -1,0 +1,14 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run make",
+            "group": "build",
+            "type": "shell",
+            "command": "make",
+            "options": {"cwd": "${workspaceFolder}"},
+            "args": ["-j", "20"],
+            "problemMatcher": []
+        },
+    ]
+}
