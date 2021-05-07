@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
     printf("Answer_to_universe: %d\n", *rt_val);
     // Destroy table
     hashtable_destroy(ht);
+    
     return 0;
 }
 ```
