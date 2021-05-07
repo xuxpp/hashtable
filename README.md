@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     hashtable_put(ht, "key", &val);
     // Get value
     int *rt_val = hashtable_get(ht, "key");
-    printf("Answer_to_universe: %d\n", *rt_val);
+    printf("Answer_to_the_universe: %d\n", *rt_val);
     // Destroy table
     hashtable_destroy(ht);
     
