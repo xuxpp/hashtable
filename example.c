@@ -33,5 +33,9 @@ int main(int argc, char *argv[])
         printf("%ld: dummy_a: %d, dummy_b %d\n", i, data->a, data->b);
     }
 
+    hashtable_int_destroy(ht);
+    free(keys);
+    free(data);
+
     return 0;
 }
