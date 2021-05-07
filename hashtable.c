@@ -8,9 +8,9 @@
 typedef struct element_int_t element_int_t;
 struct element_int_t
 {
-    bool       in_use;
-    void      *key;
-    void      *val;
+    bool           in_use;
+    void          *key;
+    void          *val;
     element_int_t *next;
 };
 
@@ -19,6 +19,7 @@ struct hashtable_t
     size_t            num_element_ints;
     size_t            table_size;
     size_t            key_len;
+    size_t            num_collision;
     hashtable_hash_f *hash_f;
     element_int_t    *data;
 };
@@ -63,6 +64,7 @@ void hashtable_put(hashtable_t *ht, void *key, void *val)
 
     if (curr->in_use)
     {
+        ht->num_collision++;
         while (curr->next) curr = curr->next;
         curr->next = calloc(1, sizeof(*curr));
         curr = curr->next;
@@ -74,6 +76,11 @@ void hashtable_put(hashtable_t *ht, void *key, void *val)
     ht->num_element_ints++;
 }
 
+size_t hashtable_get_num_collision(hashtable_t *ht)
+{
+    return ht->num_collision;
+}
+
 void hashtable_set_hash_function(hashtable_t *ht, hashtable_hash_f *f)
 {
     ht->hash_f = f;
@@ -82,7 +89,8 @@ void hashtable_set_hash_function(hashtable_t *ht, hashtable_hash_f *f)
 hashtable_t *hashtable_create(size_t table_size, size_t key_len)
 {
     hashtable_t *ht = calloc(1, sizeof(*ht));
-    ht->hash_f = default_hash_func;
+    ht->hash_f      = default_hash_func;
+    ht->key_len     = key_len;
     for (size_t i = 0; i < 32; i++)
     {
         size_t tmp = (1 << i);

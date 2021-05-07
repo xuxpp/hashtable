@@ -37,6 +37,8 @@ int main(int argc, char *argv[])
         printf("%s: dummy_a: %d, dummy_b %d\n", keys[i], data->a, data->b);
     }
 
+    printf("Number of collisions: %ld\n", hashtable_get_num_collision(ht));
+
     hashtable_destroy(ht);
     for (size_t i = 0; i < TEST_SIZE; i++)
         free(keys[i]);

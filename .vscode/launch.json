@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/hash_test",
+            "program": "${workspaceFolder}/build/app",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
