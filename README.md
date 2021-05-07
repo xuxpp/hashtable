@@ -11,13 +11,13 @@ You can override the default hash function via `hashtable_set_hash_function()`.
 int main(int argc, char *argv[])
 {
     // Create table
-    hashtable_t *ht = hashtable_create(1, 4);
+    hashtable_t *ht = hashtable_create(1);
     // Store value
     int val = 42;
-    hashtable_put(ht, "key", &val);
+    hashtable_put(ht, "answer_to_the_universe", &val, sizeof(val));
     // Get value
-    int *rt_val = hashtable_get(ht, "key");
-    printf("Answer_to_the_universe: %d\n", *rt_val);
+    int *rt_val = hashtable_get(ht, "answer_to_the_universe");
+    printf("Answer: %d\n", *rt_val);
     // Destroy table
     hashtable_destroy(ht);
     
