@@ -2,13 +2,13 @@
 
 #include <stddef.h>
 
-typedef struct hashtable_int_t hashtable_int_t;
-typedef size_t hashtable_int_t_hash_f (int);
+typedef struct hashtable_t hashtable_t;
+typedef size_t hashtable_hash_f (void *key, size_t len);
 
-void *hashtable_int_get(hashtable_int_t *ht, int key);
-void  hashtable_int_put(hashtable_int_t *ht, int key, void *val);
+void *hashtable_get(hashtable_t *ht, void *key);
+void  hashtable_put(hashtable_t *ht, void * key, void *val);
 
-void hashtable_int_set_hash_function(hashtable_int_t *ht, hashtable_int_t_hash_f *f);
+void hashtable_set_hash_function(hashtable_t *ht, hashtable_hash_f *f);
 
-hashtable_int_t *hashtable_int_create(size_t initial_size);
-void       hashtable_int_destroy(hashtable_int_t *ht);
+hashtable_t *hashtable_create(size_t initial_size, size_t key_len);
+void       hashtable_destroy(hashtable_t *ht);

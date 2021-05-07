@@ -1,6 +1,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "hashtable.h"
 
@@ -8,27 +9,28 @@ typedef struct element_int_t element_int_t;
 struct element_int_t
 {
     bool       in_use;
-    int        key;
+    void      *key;
     void      *val;
     element_int_t *next;
 };
 
-struct hashtable_int_t
+struct hashtable_t
 {
-    size_t                  num_element_ints;
-    size_t                  table_size;
-    hashtable_int_t_hash_f *hash_f;
-    element_int_t          *data;
+    size_t            num_element_ints;
+    size_t            table_size;
+    size_t            key_len;
+    hashtable_hash_f *hash_f;
+    element_int_t    *data;
 };
 
-static size_t default_hash_func(int key)
+static size_t default_hash_func(void *key, size_t len)
 {
-    return key;
+    return (size_t)key;
 }
 
-static size_t hash_idx(hashtable_int_t *ht, int key)
+static size_t hash_idx(hashtable_t *ht, void *key)
 {
-    return ht->hash_f(key) & (ht->table_size - 1);
+    return ht->hash_f(key, ht->key_len) & (ht->table_size - 1);
 }
 
 static void clear_list(element_int_t *e)
@@ -42,12 +44,12 @@ static void clear_list(element_int_t *e)
     }
 }
 
-void *hashtable_int_get(hashtable_int_t *ht, int key)
+void *hashtable_get(hashtable_t *ht, void *key)
 {
     element_int_t *curr = &ht->data[hash_idx(ht, key)];
 
     while (curr)
-        if (curr->key == key)
+        if (memcmp(curr->key, key, ht->key_len) == 0)
             return curr->val;
         else
             curr = curr->next;
@@ -55,7 +57,7 @@ void *hashtable_int_get(hashtable_int_t *ht, int key)
     return NULL;
 }
 
-void hashtable_int_put(hashtable_int_t *ht, int key, void *val)
+void hashtable_put(hashtable_t *ht, void *key, void *val)
 {
     element_int_t *curr = &ht->data[hash_idx(ht, key)];
 
@@ -72,14 +74,14 @@ void hashtable_int_put(hashtable_int_t *ht, int key, void *val)
     ht->num_element_ints++;
 }
 
-void hashtable_int_set_hash_function(hashtable_int_t *ht, hashtable_int_t_hash_f *f)
+void hashtable_set_hash_function(hashtable_t *ht, hashtable_hash_f *f)
 {
     ht->hash_f = f;
 }
 
-hashtable_int_t *hashtable_int_create(size_t table_size)
+hashtable_t *hashtable_create(size_t table_size, size_t key_len)
 {
-    hashtable_int_t *ht = calloc(1, sizeof(*ht));
+    hashtable_t *ht = calloc(1, sizeof(*ht));
     ht->hash_f = default_hash_func;
     for (size_t i = 0; i < 32; i++)
     {
@@ -94,7 +96,7 @@ hashtable_int_t *hashtable_int_create(size_t table_size)
     if (!ht->table_size)
     {
         fprintf(stderr, "table_size too big\n");
-        hashtable_int_destroy(ht);
+        hashtable_destroy(ht);
         return NULL;
     }
     ht->data = calloc(ht->table_size, sizeof(*ht->data));
@@ -102,7 +104,7 @@ hashtable_int_t *hashtable_int_create(size_t table_size)
     return ht;
 }
 
-void hashtable_int_destroy(hashtable_int_t *ht)
+void hashtable_destroy(hashtable_t *ht)
 {
     for (size_t i = 0; i < ht->table_size; i++)
         if (ht->data[i].in_use)
