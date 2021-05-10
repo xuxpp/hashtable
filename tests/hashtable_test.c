@@ -97,8 +97,5 @@ int main(int argc, char *argv[])
         default: break;
     }
 
-    if (result)
-        return 0;
-    else
-        return 1;
+    return result ? 0 : 1;
 }
