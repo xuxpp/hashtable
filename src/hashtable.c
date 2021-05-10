@@ -110,15 +110,30 @@ bool hashtable_put(hashtable_t *ht, const char *key, const void *val, size_t val
     element_t *e = &ht->data[hash_idx(ht, key)];
     bool collision = false;
 
-    if (e->key && !key_match(key, e->key))
+    while (e && e->key)
     {
-        // If the key is different, store in the list
-        ht->num_collision++;
-        collision = true;
-        while (e->next && !key_match(key, e->key))
-            e = e->next; // Walk & check untill the end of the list
-        e->next = calloc(1, sizeof(*e));
-        e = e->next;
+        if (key_match(e->key, key))
+        {
+            // Update value
+            free(e->val);
+            e->val = calloc(1, val_len);
+            memcpy(e->val, val, val_len);
+            return false;
+        }
+        else
+        {
+            collision = true;
+            if (!e->next) // End of the list
+            {
+                e->next = calloc(1, sizeof(*e->next));
+                e = e->next;
+                break;
+            }
+            else
+            {
+                e = e->next;
+            }
+        }
     }
 
     e->key = calloc(1, strlen(key)+1); // +1 -> '\0'
@@ -126,6 +141,9 @@ bool hashtable_put(hashtable_t *ht, const char *key, const void *val, size_t val
     strcpy(e->key, key);
     memcpy(e->val, val, val_len);
     ht->num_elements++;
+
+    if (collision)
+        ht->num_collision++;
 
     return collision;
 }
